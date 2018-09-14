@@ -114,15 +114,38 @@ app.get('/',(req,res)=>{
 
 })
 
-// tweet post
+// tweet post-----------------------------------------
 app.post('/',(req,res)=>{
+
   var body=_.pick(req.body,['email','message'])
   var tweet=new Tweet(body);
+var message=body.message;
+
+  console.log("message-----",message);
+
+if(body.email && body.message){
+  var str = message.substring(message.indexOf("@") + 1);
+  console.log(str)
+  var str1 = str;
+  var firstWord = _.first( str1.split(" ") )
+  console.log(firstWord)
+
+  Registration.find({name : firstWord},usersProtection1).then((doc)=>{
+  console.log("subscribed emailid is",doc[0].email)
+  }).catch((e)=>{
+  console.log("error---------",e);
+  })
   tweet.save().then((doc)=>{
     res.send(doc);
   }).catch((e)=>{
-res.send(e);
+  res.send(e);
   })
+}
+  else{
+    res.send('Invalid email or mssg format')
+  }
+
+
 })
 
 ///-------------tweet delete--------------------------
