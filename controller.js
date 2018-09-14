@@ -4,20 +4,33 @@ var app=express();
 var {ObjectID}=require('mongodb')
 var {Registration}=require('./model/user')
 var {Tweet}=require('./model/tweet')
-
+var validator=require('validator')
 const _ =require('lodash');
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/',(req,res)=>{
-  res.status(200).send('mapping is done');
-})
+// app.get('/',(req,res)=>{
+//   res.status(200).send('mapping is done');
+// })
 //----------------------------
+// app.get('/',(req,res)=>{
+//   res.status(200).send(res);
+// })
 
-
-
+var usersProtection={
+  __v : false,
+//  password : false,
+  _id : false
+};
+app.get('/registration',(req,res)=>{
+  Registration.find({},usersProtection1).then((doc)=>{
+    res.send(doc);
+  }).catch((e)=>{
+    res.send(e);
+  })
+})
 
 //------------------------registration------------------------------------------
 app.post('/registration', (req,res)=> {
@@ -68,28 +81,41 @@ var usersProtection1={
 //  _id : false
 };
 // list out tweets for particualar emails---- recent comes first-------------
-app.get('/home/:email',(req,res)=>{
-  var email=req.params.email;
-  console.log(email)
-Tweet.find({email : email},usersProtection1).sort({date : -1}).then((doc)=>{
-  res.send(doc)
-}).catch((e)=>{
-  res.send(e);
-})
-})
+// app.get('/:email',(req,res)=>{
+//   var email=req.params.email;
+//   console.log(email)
+// Tweet.find({email : email},usersProtection1).sort({date : -1}).then((doc)=>{
+//   res.send(doc)
+// }).catch((e)=>{
+//   res.send(e);
+// })
+// })
 
 
 ///lista out all tweets--------------
-app.get('/home',(req,res)=>{
-  Tweet.find({},usersProtection1).then((doc)=>{
-    res.send(doc);
-  }).catch((e)=>{
-    res.send(e);
-  })
+app.get('/',(req,res)=>{
+
+  if((req.query.email)==null)
+  {
+    Tweet.find({},usersProtection1).then((doc)=>{
+      res.send(doc);
+    }).catch((e)=>{
+      res.send(e);
+    })
+  }
+  else {
+    var query=req.query.email;
+    Tweet.find({email : query},usersProtection1).sort({date : -1}).then((doc)=>{
+      res.send(doc)
+    }).catch((e)=>{
+      res.send(e);
+    })
+  }
+
 })
 
 // tweet post
-app.post('/home',(req,res)=>{
+app.post('/',(req,res)=>{
   var body=_.pick(req.body,['email','message'])
   var tweet=new Tweet(body);
   tweet.save().then((doc)=>{
@@ -101,7 +127,7 @@ res.send(e);
 
 ///-------------tweet delete--------------------------
 
-app.delete('/home/:id',(req,res)=>{
+app.delete('/:id',(req,res)=>{
   var _id=req.params.id;
 //  console.log(id);
 
@@ -114,6 +140,26 @@ Tweet.findOneAndDelete(_id).then((doc)=>{      //findByIdAndRemove
   console.log("unable to fetch",e);
 })
 })
+
+//=-------patch-----------------------
+
+app.patch('/home/:id',(req,res)=>{
+  var _id=req.params.id;
+  var body=_.pick(req.body,['message'])
+
+console.log(body);
+
+Tweet.findByIdAndUpdate(_id,{$set : body},{new : true}).then((doc)=>{
+  if(!doc){
+    return res.status(404).send();
+  }
+  res.send({doc});
+}).catch((e)=>{
+  res.status(400).send();
+})
+
+})
+
 
 
 
