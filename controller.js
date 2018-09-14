@@ -64,8 +64,8 @@ console.log("user-----------",user)
 
 
 var usersProtection1={
-  __v : false,
-  _id : false
+  __v : false
+//  _id : false
 };
 // list out tweets for particualar emails---- recent comes first-------------
 app.get('/home/:email',(req,res)=>{
@@ -76,10 +76,17 @@ Tweet.find({email : email},usersProtection1).sort({date : -1}).then((doc)=>{
 }).catch((e)=>{
   res.send(e);
 })
-
-
 })
 
+
+///lista out all tweets--------------
+app.get('/home',(req,res)=>{
+  Tweet.find({},usersProtection1).then((doc)=>{
+    res.send(doc);
+  }).catch((e)=>{
+    res.send(e);
+  })
+})
 
 // tweet post
 app.post('/home',(req,res)=>{
@@ -91,6 +98,27 @@ app.post('/home',(req,res)=>{
 res.send(e);
   })
 })
+
+///-------------tweet delete--------------------------
+
+app.delete('/home/:id',(req,res)=>{
+  var _id=req.params.id;
+//  console.log(id);
+
+Tweet.findOneAndDelete(_id).then((doc)=>{      //findByIdAndRemove
+  if(!doc){
+    return res.status(404).send();
+  }
+  res.send(doc);
+}).catch((e)=>{
+  console.log("unable to fetch",e);
+})
+})
+
+
+
+
+
 
 app.listen(3001,()=>{
   console.log('application is running in port 3001')
