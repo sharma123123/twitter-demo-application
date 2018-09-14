@@ -64,8 +64,8 @@ console.log("user-----------",user)
 
 
 var usersProtection1={
-  __v : false
-//  _id : false
+  __v : false,
+  _id : true
 };
 // list out tweets for particualar emails---- recent comes first-------------
 app.get('/home/:email',(req,res)=>{
@@ -76,16 +76,20 @@ Tweet.find({email : email},usersProtection1).sort({date : -1}).then((doc)=>{
 }).catch((e)=>{
   res.send(e);
 })
+
+
+})
+
+app.get('/home/',(req,res)=>{
+  var email=req.params.email;
+  console.log(email)
+Tweet.find().then((doc)=>{
+  res.send(doc)
+}).catch((e)=>{
+  res.send(e);
 })
 
 
-///lista out all tweets--------------
-app.get('/home',(req,res)=>{
-  Tweet.find({},usersProtection1).then((doc)=>{
-    res.send(doc);
-  }).catch((e)=>{
-    res.send(e);
-  })
 })
 
 // tweet post
@@ -99,25 +103,18 @@ res.send(e);
   })
 })
 
-///-------------tweet delete--------------------------
-
-app.delete('/home/:id',(req,res)=>{
-  var _id=req.params.id;
-//  console.log(id);
-
-Tweet.findOneAndDelete(_id).then((doc)=>{      //findByIdAndRemove
-  if(!doc){
-    return res.status(404).send();
-  }
-  res.send(doc);
-}).catch((e)=>{
-  console.log("unable to fetch",e);
-})
-})
-
-
-
-
+// app.delete('/home/:email',(req,res)=>{
+//  var _id=req.params.email;
+//  console.log('------------id',_id)
+//  User.findByIdAndRemove(_id).then((doc)=>{
+//    if(doc)
+//    res.send(doc)
+//    else{
+//      res.send('user doesnot exists')
+//    }
+//  }).catch((e)=>{
+//    res.send(e);
+//  })
 
 
 app.listen(3001,()=>{
