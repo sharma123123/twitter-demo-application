@@ -6,7 +6,7 @@ var {Registration}=require('./model/user')
 var {Tweet}=require('./model/tweet')
 var validator=require('validator')
 const _ =require('lodash');
-
+ var {parseMentions} =require('./mention/mentiontweet')
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -92,7 +92,7 @@ var usersProtection1={
 // })
 
 
-///lista out all tweets--------------
+///list out all tweets--------------
 app.get('/',(req,res)=>{
 
   if((req.query.email)==null)
@@ -115,26 +115,57 @@ app.get('/',(req,res)=>{
 })
 
 // tweet post-----------------------------------------
+// app.post('/',(req,res)=>{
+//
+//   var body=_.pick(req.body,['email','message'])
+//   var tweet=new Tweet(body);
+// var message=body.message;
+//
+//   console.log("message-----",message);
+//
+// if(body.email && body.message){
+//   var str = message.substring(message.indexOf("@") + 1);
+//   console.log(str)
+//   var str1 = str;
+//   var firstWord = _.first( str1.split(" ") )
+//   console.log(firstWord)
+//
+//   Registration.find({name : firstWord},usersProtection1).then((doc)=>{
+//   console.log("subscribed emailid is",doc[0].email)
+//   }).catch((e)=>{
+//   console.log("error---------",e);
+//   })
+//   tweet.save().then((doc)=>{
+//     res.send(doc);
+//   }).catch((e)=>{
+//   res.send(e);
+//   })
+// }
+//   else{
+//     res.send('Invalid email or mssg format')
+//   }
+//
+//
+// })
+
+
+
+
 app.post('/',(req,res)=>{
-
-  var body=_.pick(req.body,['email','message'])
-  var tweet=new Tweet(body);
+var body=_.pick(req.body,['email','message'])
+var tweet=new Tweet(body);
 var message=body.message;
-
-  console.log("message-----",message);
-
 if(body.email && body.message){
-  var str = message.substring(message.indexOf("@") + 1);
-  console.log(str)
-  var str1 = str;
-  var firstWord = _.first( str1.split(" ") )
-  console.log(firstWord)
+//  var str = "Hi @vivek how are you @shikha";
 
-  Registration.find({name : firstWord},usersProtection1).then((doc)=>{
+var mentionpeople=parseMentions(message);
+for(var i=0;i<mentionpeople.length;i++){
+  Registration.find({name : mentionpeople[i]},usersProtection1).then((doc)=>{
   console.log("subscribed emailid is",doc[0].email)
   }).catch((e)=>{
   console.log("error---------",e);
   })
+}
   tweet.save().then((doc)=>{
     res.send(doc);
   }).catch((e)=>{
@@ -144,8 +175,6 @@ if(body.email && body.message){
   else{
     res.send('Invalid email or mssg format')
   }
-
-
 })
 
 ///-------------tweet delete--------------------------
@@ -182,12 +211,6 @@ Tweet.findByIdAndUpdate(_id,{$set : body},{new : true}).then((doc)=>{
 })
 
 })
-
-
-
-
-
-
 
 app.listen(3001,()=>{
   console.log('application is running in port 3001')
